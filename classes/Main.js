@@ -1,3 +1,7 @@
 const MongoDB = require('./mongoDB/MongoDB');
+const MailChimp = require('./mailchimp/MailChimp');
 
-module.exports = { MongoDB };
+module.exports = {
+  MongoDB,
+  MailChimp
+};
