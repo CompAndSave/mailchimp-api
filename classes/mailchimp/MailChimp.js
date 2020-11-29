@@ -59,6 +59,10 @@ class MailChimp {
   async getCampaignDbData(query, projection, sort, pagination) {
     return Promise.resolve((await this.campaignData.getData("campaignData", query, false, projection, sort, pagination, false)));
   }
+
+  async getReportDbData(query, projection, sort, pagination) {
+    return Promise.resolve((await this.campaignReport.getData("campaignReport", query, false, projection, sort, pagination, false)));
+  }
 }
 
 module.exports = MailChimp;

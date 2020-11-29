@@ -70,7 +70,7 @@ function decodeGaKey(gaKey) {
 }
 
 router.get('/', asyncHandler(async (req, res, next) => {
-  res.json("dpne");
+  res.json("invalid-endpoint");
 }));
 
 // POST /import-ga-data
