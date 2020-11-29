@@ -132,6 +132,9 @@ router.post('/import-ga-data', asyncHandler(async (req, res, next) => {
       let combinations = doc.variate_settings.combinations;
       for (let i = 0; i < combinations.length; ++i) {
         variateData.push({
+          _id: combinations[i].id,
+          type: "variate-child",
+          parent_id: doc._id,
           google_analytics: `${combinations[i].id}-${doc.google_analytics}`,
           year: doc.year,
           quarter: doc.quarter,
@@ -147,10 +150,10 @@ router.post('/import-ga-data', asyncHandler(async (req, res, next) => {
   docs = [...docs.filter(doc => typeof doc.google_analytics !== "undefined"), ...variateData];
 
   for (let i = 0; i < docs.length; ++i) {
-    let result = await ga.getGAData("cas", {
+    let result = await ga.getGAData(req.body.site, {
       startDate: "2020-01-01",
       endDate: "today",
-      metrics: "ga:transactions,ga:transactionsPerSession,ga:transactionRevenue",
+      metrics: "ga:transactions,ga:transactionsPerSession,ga:transactionRevenue,ga:sessions",
       dimensions: "ga:campaign",
       filters: `ga:campaign==${docs[i].google_analytics}`
     });
@@ -159,9 +162,11 @@ router.post('/import-ga-data', asyncHandler(async (req, res, next) => {
       console.log(result.data);
     }
     else {
-      importData.push({
+      let data = {
         _id: result.data.rows[0][0],
-        site: "cas",
+        mc_id: docs[i]._id,
+        type: docs[i].type,
+        site: req.body.site,
         year: docs[i].year,
         quarter: docs[i].quarter,
         month: docs[i].month,
@@ -169,8 +174,12 @@ router.post('/import-ga-data', asyncHandler(async (req, res, next) => {
         segment: docs[i].segment,
         transaction: Number(result.data.rows[0][1]),
         ecomm_conversion_rate: Number(result.data.rows[0][2]),
-        revenue: Number(result.data.rows[0][3])
-      });
+        revenue: Number(result.data.rows[0][3]),
+        sessions: Number(result.data.rows[0][4])
+      };
+
+      if (docs[i].type === "variate-child") { data.mc_parent_id = docs[i].parent_id; }
+      importData.push(data);
     }
   }
 

@@ -51,8 +51,8 @@ class GoogleAnalytic {
     return Promise.resolve(await this.gaCampaignReport.allBulkUnOrdered(replaceOneArr));
   }
 
-  async getReportData() {
-    return await this.gaCampaignReport.getAllData();
+  async getAllReportData(projection, sort, pagination) {
+    return await this.gaCampaignReport.getAllData(projection, sort, pagination);
   }
 }
 
