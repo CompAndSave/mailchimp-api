@@ -69,6 +69,47 @@ function decodeGaKey(gaKey) {
   return result;
 }
 
+// variateParams is an object like following
+// {
+//   type: "variate-parent",
+//   child_ids: ["123546asd", "789486asd"]
+// }
+//
+// {
+//   type: "variate-child",
+//   parent_id: "ajkajs123"
+// }
+//
+function formatCampaignReportData(campaignData, reportData, variateParams) {
+  delete reportData.bounces.syntax_errors;
+  delete reportData.opens.opens_total;
+  delete reportData.opens.last_open;
+  delete reportData.clicks.clicks_total;
+  delete reportData.clicks.unique_clicks;
+  delete reportData.clicks.last_click;
+
+  let res = {
+    _id: reportData.id,
+    type: variateParams ? variateParams.type : campaignData.type,
+    year: campaignData.year,
+    quarter: campaignData.quarter,
+    month: campaignData.month,
+    promo_num: campaignData.promo_num,
+    segment: campaignData.segment,
+    emails_sent: reportData.emails_sent,
+    abuse_reports: reportData.abuse_reports,
+    unsubscribed: reportData.unsubscribed,
+    bounces: reportData.bounces,
+    opens: reportData.opens,
+    clicks: reportData.clicks
+  };
+
+  if (variateParams && variateParams.child_ids) { res.child_ids = variateParams.child_ids; }
+  else if (variateParams && variateParams.parent_id) { res.parent_id = variateParams.parent_id; }
+
+  return res;
+}
+
 router.get('/', asyncHandler(async (req, res, next) => {
   res.json("invalid-endpoint");
 }));
@@ -149,32 +190,29 @@ router.post('/import-campaign-report', asyncHandler(async (req, res, next) => {
   req.setTimeout(600000);
 
   let reportData = [], mailchimp = new MailChimp();
-  let docs = await mailchimp.getAllCampaignDbDatabySite(req.body.site, { _id: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1 });
+  let docs = await mailchimp.getAllCampaignDbDatabySite(req.body.site, { _id: 1, type: 1, variate_settings: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1 });
 
   for (let i = 0; i < docs.length; ++i) {
     let result = (await mailchimp.getReportData(docs[i]._id)).data;
 
-    delete result.bounces.syntax_errors;
-    delete result.opens.opens_total;
-    delete result.opens.last_open;
-    delete result.clicks.clicks_total;
-    delete result.clicks.unique_clicks;
-    delete result.clicks.last_click;
-  
-    reportData.push({
-      _id: result.id,
-      year: docs[i].year,
-      quarter: docs[i].quarter,
-      month: docs[i].month,
-      promo_num: docs[i].promo_num,
-      segment: docs[i].segment,
-      emails_sent: result.emails_sent,
-      abuse_reports: result.abuse_reports,
-      unsubscribed: result.unsubscribed,
-      bounces: result.bounces,
-      opens: result.opens,
-      clicks: result.clicks
-    });
+    if (docs[i].type === "variate") {
+      let childIds = [];
+      docs[i].variate_settings.combinations.forEach(item => childIds.push(item.id));
+      reportData.push(formatCampaignReportData(docs[i], result, {
+        type: "variate-parent",
+        child_ids: childIds
+      }));
+
+      for (let j = 0; j < childIds.length; ++j) {
+        reportData.push(formatCampaignReportData(docs[i], (await mailchimp.getReportData(childIds[j])).data, {
+          type: "variate-child",
+          parent_id: docs[i]._id
+        }));
+      }
+    }
+    else {
+      reportData.push(formatCampaignReportData(docs[i], result));
+    }
   }
 
   await resHandler.handleRes(req, res, next, 200, {

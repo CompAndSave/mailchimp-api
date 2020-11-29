@@ -57,6 +57,7 @@ router.get('/', asyncHandler(async (req, res, next) => {
   if (quarter) { query.quarter = quarter; }
   if (month) { query.month = month; }
   if (promoNum) { query.promo_num = promoNum; }
+  if (!showVariate) { query.type = { $ne: "variate-child" }; }
 
   let mcData = await mc.getReportDbData(query);
   let yearSet = new Set(), quarterSet = new Set(), monthSet = new Set(), promoNumSet = new Set(), segmentSet = new Set();
