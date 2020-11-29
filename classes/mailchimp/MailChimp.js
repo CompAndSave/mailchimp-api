@@ -52,8 +52,12 @@ class MailChimp {
            Promise.reject(`invalid-type-${type}`);
   }
 
-  async getAllCampaignDatabySite(site, projection, sort, pagination) {
+  async getAllCampaignDbDatabySite(site, projection, sort, pagination) {
     return Promise.resolve((await this.campaignData.getData("campaignData", { list_id: this.audienceId[site] }, false, projection, sort, pagination, false)));
+  }
+
+  async getCampaignDbData(query, projection, sort, pagination) {
+    return Promise.resolve((await this.campaignData.getData("campaignData", query, false, projection, sort, pagination, false)));
   }
 }
 

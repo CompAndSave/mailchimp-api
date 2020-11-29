@@ -6,7 +6,7 @@ const serverConfig = require('../../server-config');
 class GoogleAnalytic {
   constructor () {
     this.keyFile = path.join(__dirname, `../../${serverConfig.GoogleKeyFilePath}`);
-    this.campaignReport = new MongoDB("campaignReport");
+    this.gaCampaignReport = new MongoDB("gaCampaignReport");
     this.viewId = {
       cas: process.env.CAS_GA_VIEW_ID,
       ci: process.env.CI_GA_VIEW_ID,
@@ -36,8 +36,23 @@ class GoogleAnalytic {
     }));
   }
 
+  async importData(importArr) {
+    let replaceOneArr = [];
+    importArr.forEach(element => {
+      replaceOneArr.push({
+        replaceOne: {
+          filter: { _id: element._id },
+          replacement: element,
+          upsert: true
+        }
+      });
+    });
+
+    return Promise.resolve(await this.gaCampaignReport.allBulkUnOrdered(replaceOneArr));
+  }
+
   async getReportData() {
-    return await this.campaignReport.getAllData();
+    return await this.gaCampaignReport.getAllData();
   }
 }
 
