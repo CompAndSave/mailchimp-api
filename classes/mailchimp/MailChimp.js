@@ -3,7 +3,6 @@ const MongoDB = require("../mongoDB/MongoDB");
 
 class MailChimp {
   constructor () {
-    this.listData = new MongoDB("listData");
     this.campaignData = new MongoDB("campaignData");
     this.campaignReport = new MongoDB("campaignReport");
     this.audienceId = {
@@ -11,7 +10,7 @@ class MailChimp {
       ci: process.env.CI_AUDIENCE_LIST_ID,
       ti: process.env.TI_AUDIENCE_LIST_ID
     };
-    this.auth = {
+    this.header = {
       auth: {
         username: process.env.MC_USERNAME,
         password: process.env.MC_API_KEY
@@ -20,19 +19,41 @@ class MailChimp {
   }
 
   async getCampaignData(site, count, sinceSendTime, sortField) {
-    return Promise.resolve((await axios.get(`${process.env.MC_API_URL}campaigns?&count=${count}&since_send_time=${sinceSendTime}&list_id=${this.audienceId[site]}&sort_field=${sortField}`, this.auth)).data);
+    return Promise.resolve((await axios.get(`${process.env.MC_API_URL}campaigns?&count=${count}&since_send_time=${sinceSendTime}&list_id=${this.audienceId[site]}&sort_field=${sortField}`, this.header)).data);
   }
 
   async getCampaignContentData(campaignId) {
-    return Promise.resolve((await axios.get(`${process.env.MC_API_URL}campaigns/${campaignId}/content`, this.auth)));
+    return Promise.resolve((await axios.get(`${process.env.MC_API_URL}campaigns/${campaignId}/content`, this.header)));
   }
 
-  async getListData() {
-    return await this.listData.getAllData();
+  async getReportData(campaignId) {
+    return Promise.resolve((await axios.get(`${process.env.MC_API_URL}reports/${campaignId}`, {
+      ...this.header,
+      campaign_id: campaignId
+    })));
   }
 
-  async insertCampaignData(insertArr) {
-    return await this.campaignData.insertBulkUnOrdered(insertArr);
+  // type param: either "campaignData" or "campaignReport"
+  //
+  async importData(type, importArr) {
+    let replaceOneArr = [];
+    importArr.forEach(element => {
+      replaceOneArr.push({
+        replaceOne: {
+          filter: { _id: element._id },
+          replacement: element,
+          upsert: true
+        }
+      });
+    });
+
+    return type === "campaignData" ? Promise.resolve(await this.campaignData.allBulkUnOrdered(replaceOneArr)) :
+           type === "campaignReport" ? Promise.resolve(await this.campaignReport.allBulkUnOrdered(replaceOneArr)) :
+           Promise.reject(`invalid-type-${type}`);
+  }
+
+  async getAllCampaignDatabySite(site, projection, sort, pagination) {
+    return Promise.resolve((await this.campaignData.getData("campaignData", { list_id: this.audienceId[site] }, false, projection, sort, pagination, false)));
   }
 }
 

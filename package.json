@@ -17,6 +17,7 @@
     "express-async-handler": "^1.1.4",
     "express-winston": "^4.0.5",
     "fs": "0.0.1-security",
+    "googleapis": "^65.0.0",
     "helmet": "^3.23.3",
     "http-errors": "^1.8.0",
     "moment-timezone": "^0.5.32",
