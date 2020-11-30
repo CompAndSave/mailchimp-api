@@ -42,8 +42,7 @@ function createDataReturn(data, gaData, showVariate, childId) {
     transaction: totalTrans,
     ecomm_conversion_rate: Math.round((totalTrans / totalSession) * 10000) / 100,
     revenue: Math.round(totalRev * 100) / 100,
-    rpe: Math.round((totalRev / emails_sent) * 100) / 100,
-    session: totalSession
+    rpe: Math.round((totalRev / emails_sent) * 100) / 100
   } : undefined;
 
   if (showVariate && childIds) {
