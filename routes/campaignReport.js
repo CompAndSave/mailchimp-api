@@ -188,7 +188,56 @@ router.get('/', asyncHandler(async (req, res, next) => {
       response.push(createDataReturn(mcData, gaData, showVariate));
   }
 
-  res.json({ result: response });
+  await resHandler.handleRes(req, res, next, 200, { result: response });
+}));
+
+// Get /campaign-report/summary
+// Return the no. of campaign counts for all report data
+//
+// Support site params in future
+//
+router.get('/summary', asyncHandler(async (req, res, next) => {
+  let mc = new MailChimp();
+  let mcData = await mc.getAllCampaignDbDatabySite("cas", { type: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1, variate_settings: 1 });
+  let result = {};
+
+  let yearSet = new Set();
+  mcData.forEach(item => yearSet.add(item.year));
+
+  yearSet.forEach(year => {
+    result[year] = ((year) => {
+      let quarterSet = new Set();
+      let data = mcData.filter(data => data.year === year), result = {};
+      data.forEach(item => quarterSet.add(item.quarter));
+      quarterSet.forEach(quarter => {
+        result[quarter] = ((quarter) => {
+          let monthSet = new Set();
+          let data = mcData.filter(data => data.year === year && data.quarter === quarter), result = {};
+          data.forEach(item => monthSet.add(item.month));
+          monthSet.forEach(month => {
+            result[month] = ((month) => {
+              let promoNumSet = new Set();
+              let data = mcData.filter(data => data.year === year && data.quarter === quarter && data.month === month), result = {};
+              data.forEach(item => promoNumSet.add(item.promo_num));
+              promoNumSet.forEach(promo_num => {
+                result[promo_num] = ((promo_num) => {
+                  let segment = []
+                  let data = mcData.filter(data => data.year === year && data.quarter === quarter && data.month === month && data.promo_num === promo_num);
+                  data.forEach(item => segment.push(item.segment));
+                  return Array.from(segment);
+                })(promo_num);
+              });
+              return result;
+            })(month);
+          })
+          return result;
+        })(quarter);
+      });
+      return result;
+    })(year);
+  });
+
+  await resHandler.handleRes(req, res, next, 200, { result: result });
 }));
 
 module.exports = router;
