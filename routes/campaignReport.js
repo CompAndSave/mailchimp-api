@@ -65,6 +65,8 @@ function createDataReturn(data, gaData, showVariate, childId) {
 //  - showVariate (boolean, only available when groupBy is segment) - Default is false
 //
 router.get('/', asyncHandler(async (req, res, next) => {
+  console.log(req.body)
+
   let year = req.body.year ? Number(req.body.year) : undefined;
   let quarter = req.body.quarter ? Number(req.body.quarter) : undefined;
   let month = req.body.month ? Number(req.body.month) : undefined;
@@ -186,7 +188,7 @@ router.get('/', asyncHandler(async (req, res, next) => {
       });
       break;
     default:
-      response.push(createDataReturn(mcData));
+      response.push(createDataReturn(mcData, gaData, showVariate));
   }
 
   res.json({ result: response });
