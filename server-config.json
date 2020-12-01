@@ -1,9 +1,0 @@
-{
-    "AccessLogPath": "logs/access.log",
-    "ExpressErrorLogPath": "logs/express-error.log",
-    "CustomErrorLogPath": "logs/error.log",
-    "CustomWriteDBErrorLogPath": "logs/writeDBError.log",
-    "GoogleKeyFilePath": "keyfiles/email-reporting-system.json",
-    "GoogleAPIScope": "https://www.googleapis.com/auth/analytics.readonly",
-    "siteKey" : ["cas", "ci", "ti"]
-}
