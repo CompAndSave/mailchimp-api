@@ -3,3 +3,4 @@
 /logs/*.log
 /keyfiles/*
 !/keyfiles/readme.md
+server-config.json

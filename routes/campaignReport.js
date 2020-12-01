@@ -1,8 +1,10 @@
 var express = require('express');
 var router = express.Router();
 const asyncHandler = require('express-async-handler');
-const { MailChimp, GoogleAnalytic } = require('../classes/Main');
+const MailChimpImport = require('mailchimp-import');
+const { GoogleAnalytic } = require('../classes/Main');
 const resHandler = require('../services/resHandler');
+const serverConfig = require('../server-config.json');
 
 function createDataReturn(data, gaData, showVariate, childId) {
   let emails_sent = 0, totalOpen = 0, totalClick = 0, totalBounces = 0, totalSpam = 0, totalUnsub = 0, totalTrans = 0, totalRev = 0, totalSession = 0, childIds;
@@ -79,7 +81,14 @@ router.get('/', asyncHandler(async (req, res, next) => {
     return await resHandler.handleRes(req, res, next, 400, { message: `invalid-groupBy-${groupBy}` });
   }
 
-  let mc = new MailChimp(), query = {};
+  let query = {}, mc = new MailChimpImport(
+    serverConfig.MCAudienceIds,
+    process.env.MC_USERNAME,
+    process.env.MC_API_KEY,
+    process.env.MC_DB_CAMPAIGN_DATA,
+    process.env.MC_DB_REPORT_DATA,
+    process.env.MC_API_URL
+  );
   if (year) { query.year = year; }
   if (quarter) { query.quarter = quarter; }
   if (month) { query.month = month; }
@@ -197,7 +206,14 @@ router.get('/', asyncHandler(async (req, res, next) => {
 // Support site params in future
 //
 router.get('/summary', asyncHandler(async (req, res, next) => {
-  let mc = new MailChimp();
+  let mc = new MailChimpImport(
+    serverConfig.MCAudienceIds,
+    process.env.MC_USERNAME,
+    process.env.MC_API_KEY,
+    process.env.MC_DB_CAMPAIGN_DATA,
+    process.env.MC_DB_REPORT_DATA,
+    process.env.MC_API_URL
+  );
   let mcData = await mc.getAllCampaignDbDatabySite("cas", { type: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1, variate_settings: 1 });
   let result = {};
 

@@ -1,56 +1,22 @@
 var express = require('express');
 var router = express.Router();
 const asyncHandler = require('express-async-handler');
-const { MailChimp, GoogleAnalytic } = require('../classes/Main');
+const MailChimpImport = require('mailchimp-import');
+const { GoogleAnalytic } = require('../classes/Main');
 const resHandler = require('../services/resHandler');
 const serverConfig = require('../server-config.json');
 
 function checkSiteKey(site) {
-  return serverConfig.siteKey.filter(key => key === site).length > 0;
+  return serverConfig.SiteKey.filter(key => key === site).length > 0;
 }
 
-// variateParams is an object like following
-// {
-//   type: "variate-parent",
-//   child_ids: ["123546asd", "789486asd"]
-// }
+// POST /import
+// Do a complete import for MailChimp campaign data, MailChimp report data and Google Analytics report data
+// MailChimp campaign data will be imported first and then async import on MailChimp report data and Google Analytics report data based on the imported campaign data
 //
-// {
-//   type: "variate-child",
-//   parent_id: "ajkajs123"
-// }
+// body params: site
 //
-function formatCampaignReportData(campaignData, reportData, variateParams) {
-  delete reportData.bounces.syntax_errors;
-  delete reportData.opens.opens_total;
-  delete reportData.opens.last_open;
-  delete reportData.clicks.clicks_total;
-  delete reportData.clicks.unique_clicks;
-  delete reportData.clicks.last_click;
-
-  let res = {
-    _id: reportData.id,
-    type: variateParams ? variateParams.type : campaignData.type,
-    year: campaignData.year,
-    quarter: campaignData.quarter,
-    month: campaignData.month,
-    promo_num: campaignData.promo_num,
-    segment: campaignData.segment,
-    emails_sent: reportData.emails_sent,
-    abuse_reports: reportData.abuse_reports,
-    unsubscribed: reportData.unsubscribed,
-    bounces: reportData.bounces,
-    opens: reportData.opens,
-    clicks: reportData.clicks
-  };
-
-  if (variateParams && variateParams.child_ids) { res.child_ids = variateParams.child_ids; }
-  else if (variateParams && variateParams.parent_id) { res.parent_id = variateParams.parent_id; }
-
-  return res;
-}
-
-router.get('/', asyncHandler(async (req, res, next) => {
+router.post('/import', asyncHandler(async (req, res, next) => {
   res.json("invalid-endpoint");
 }));
 
@@ -64,7 +30,15 @@ router.post('/import-ga-data', asyncHandler(async (req, res, next) => {
   //
   req.setTimeout(1200000);
 
-  let importData = [], variateData = [], mailchimp = new MailChimp(), ga = new GoogleAnalytic();
+  let importData = [], variateData = [], ga = new GoogleAnalytic();
+  let mailchimp = new MailChimpImport(
+    serverConfig.MCAudienceIds,
+    process.env.MC_USERNAME,
+    process.env.MC_API_KEY,
+    process.env.MC_DB_CAMPAIGN_DATA,
+    process.env.MC_DB_REPORT_DATA,
+    process.env.MC_API_URL
+  );
   let docs = await mailchimp.getAllCampaignDbDatabySite(req.body.site, { type: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1, google_analytics: 1, variate_settings: 1 });
   
   docs.forEach(doc => {
@@ -132,42 +106,29 @@ router.post('/import-ga-data', asyncHandler(async (req, res, next) => {
 // body params: site
 //
 router.post('/import-campaign-report', asyncHandler(async (req, res, next) => {
+
   // Set request timeout as 10 mins
   // The default timeout for nodejs is 2mins and it is not long enough for this request to be done
   // Browser will automatically make another request after timeout and it will cause the script run again asynchronously
   //
   req.setTimeout(600000);
 
-  let reportData = [], mailchimp = new MailChimp();
-  let docs = await mailchimp.getAllCampaignDbDatabySite(req.body.site, { _id: 1, type: 1, variate_settings: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1 });
+  let site = req.body.site;
+  if (!checkSiteKey(site)) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-site-${site}` }); }
 
-  for (let i = 0; i < docs.length; ++i) {
-    let result = (await mailchimp.getReportData(docs[i]._id)).data;
+  let mc = new MailChimpImport(
+    serverConfig.MCAudienceIds,
+    process.env.MC_USERNAME,
+    process.env.MC_API_KEY,
+    process.env.MC_DB_CAMPAIGN_DATA,
+    process.env.MC_DB_REPORT_DATA,
+    process.env.MC_API_URL
+  );
+  let result = await mc.fetchReportData(site);
 
-    if (docs[i].type === "variate") {
-      let childIds = [];
-      docs[i].variate_settings.combinations.forEach(item => childIds.push(item.id));
-      reportData.push(formatCampaignReportData(docs[i], result, {
-        type: "variate-parent",
-        child_ids: childIds
-      }));
-
-      for (let j = 0; j < childIds.length; ++j) {
-        reportData.push(formatCampaignReportData(docs[i], (await mailchimp.getReportData(childIds[j])).data, {
-          type: "variate-child",
-          parent_id: docs[i]._id
-        }));
-      }
-    }
-    else {
-      reportData.push(formatCampaignReportData(docs[i], result));
-    }
-  }
-
-  await resHandler.handleRes(req, res, next, 200, {
-    result: await mailchimp.importData("campaignReport", reportData)
-  });
+  await resHandler.handleRes(req, res, next, 200, { result: await mc.importData("campaignReport", result) });
 }));
+
 
 // POST /import-campaign-data
 // body params:
@@ -188,8 +149,15 @@ router.post('/import-campaign-data', asyncHandler(async (req, res, next) => {
   if (isNaN(Date.parse(startTime))) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-startTime-${startTime}` }); }
   if (typeof count !== "undefined" && (!Number.isInteger(count) || count < 1)) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-count-${req.body.count}` }); }
 
-  let mc = new MailChimp();
-  let result = await mc.fetchCampaignData(site, startTime);
+  let mc = new MailChimpImport(
+    serverConfig.MCAudienceIds,
+    process.env.MC_USERNAME,
+    process.env.MC_API_KEY,
+    process.env.MC_DB_CAMPAIGN_DATA,
+    process.env.MC_DB_REPORT_DATA,
+    process.env.MC_API_URL
+  );
+  let result = await mc.fetchCampaignData(site, startTime, count);
   
   await resHandler.handleRes(req, res, next, 200, {
     result: await mc.importData("campaignData", result.campaignData),
