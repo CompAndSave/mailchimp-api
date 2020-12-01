@@ -239,7 +239,7 @@ router.get('/summary', asyncHandler(async (req, res, next) => {
                 result[promo_num] = ((promo_num) => {
                   let segment = []
                   let data = mcData.filter(data => data.year === year && data.quarter === quarter && data.month === month && data.promo_num === promo_num);
-                  data.forEach(item => segment.push(item.segment));
+                  data.forEach(item => segment.push({ id: item._id, segment: item.segment }));
                   return Array.from(segment);
                 })(promo_num);
               });
