@@ -18,7 +18,7 @@ function checkSiteKey(site) {
 //  - site (e.g., "cas") - required
 //  - mode (full - import all data; quick - import MC and GA report data only; manual - select the particular data to import)
 //  - manual (required when manual mode is used. Accepted value: mc-campaign, mc-report, ga-report)
-//  - startTime (full mode only) (e.g., "2020-01-01")
+//  - startTime (full mode or manual mc-campaign) (e.g., "2020-01-01")
 //  - count (postive integer to include all campaigns at MailChimp, if count is less than the total no. of campaign at MailChimp, incomplete import will occur) (full mode only)
 //  - campaignId (only import report data for a particular MC campaign id. If it is used, all other parameters will be ignored)
 //
