@@ -4,5 +4,6 @@
     "CustomErrorLogPath": "logs/error.log",
     "CustomWriteDBErrorLogPath": "logs/writeDBError.log",
     "GoogleKeyFilePath": "keyfiles/email-reporting-system.json",
-    "GoogleAPIScope": "https://www.googleapis.com/auth/analytics.readonly"
+    "GoogleAPIScope": "https://www.googleapis.com/auth/analytics.readonly",
+    "siteKey" : ["cas", "ci", "ti"]
 }

@@ -3,70 +3,10 @@ var router = express.Router();
 const asyncHandler = require('express-async-handler');
 const { MailChimp, GoogleAnalytic } = require('../classes/Main');
 const resHandler = require('../services/resHandler');
+const serverConfig = require('../server-config.json');
 
-function decodeGaKey(gaKey) {
-  let regex = new RegExp(`^([\\d]{4})_([\\w]{3})(\\d)_(.*)$`);
-  let match = gaKey.match(regex);
-  let result = {};
-
-  result.year = Number(match[1]);
-  result.month = match[2];
-  result.promo_num = Number(match[3]);
-  result.segment = match[4];
-
-  switch (result.month) {
-    case "jan":
-      result.month = 1;
-      result.quarter = 1;
-      break;
-    case "feb":
-      result.month = 2;
-      result.quarter = 1;
-      break;
-    case "mar":
-      result.month = 3;
-      result.quarter = 1;
-      break;
-    case "apr":
-      result.month = 4;
-      result.quarter = 2;
-      break;
-    case "may":
-      result.month = 5;
-      result.quarter = 2;
-      break;
-    case "jun":
-      result.month = 6;
-      result.quarter = 2;
-      break;
-    case "jul":
-      result.month = 7;
-      result.quarter = 3;
-      break;
-    case "aug":
-      result.month = 8;
-      result.quarter = 3;
-      break;
-    case "sep":
-      result.month = 9;
-      result.quarter = 3;
-      break;
-    case "oct":
-      result.month = 10;
-      result.quarter = 4;
-      break;
-    case "nov":
-      result.month = 11;
-      result.quarter = 4;
-      break;
-    case "dec":
-      result.month = 12;
-      result.quarter = 4;
-      break;
-    default: throw new Error(`invalid-month-${result.month}`);
-  }
-
-  return result;
+function checkSiteKey(site) {
+  return serverConfig.siteKey.filter(key => key === site).length > 0;
 }
 
 // variateParams is an object like following
@@ -230,72 +170,30 @@ router.post('/import-campaign-report', asyncHandler(async (req, res, next) => {
 }));
 
 // POST /import-campaign-data
-// body params: site (e.g., "cas"), startTime (e.g., "2020-01-01")
+// body params:
+//  - site (e.g., "cas")
+//  - startTime (e.g., "2020-01-01")
+//  - count (postive integer)
 //
 router.post('/import-campaign-data', asyncHandler(async (req, res, next) => {
+
   // Set request timeout as 10 mins
   // The default timeout for nodejs is 2mins and it is not long enough for this request to be done
   // Browser will automatically make another request after timeout and it will cause the script run again asynchronously
   //
   req.setTimeout(600000);
 
-  let mailchimp = new MailChimp();
-  let data = await mailchimp.getCampaignData(req.body.site, 300, req.body.startTime, "send_time");
-  let campaigns = data.campaigns;
+  let site = req.body.site, startTime = req.body.startTime, count = typeof req.body.count !== "undefined" ? Number(req.body.count) : undefined;
+  if (!checkSiteKey(site)) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-site-${site}` }); }
+  if (isNaN(Date.parse(startTime))) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-startTime-${startTime}` }); }
+  if (typeof count !== "undefined" && (!Number.isInteger(count) || count < 1)) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-count-${req.body.count}` }); }
 
-  let campaignData = [], invalidCampaign = [];
-  for (let i = 0; i < campaigns.length; ++i) {
-    if (campaigns[i].type === "regular") {
-      let decodedGaKey = decodeGaKey(campaigns[i].tracking.google_analytics);
-
-      campaignData.push({
-        _id: campaigns[i].id,
-        list_id: process.env.CAS_AUDIENCE_LIST_ID,
-        title: campaigns[i].settings.title,
-        type: campaigns[i].type,
-        year: decodedGaKey.year,
-        quarter: decodedGaKey.quarter,
-        month: decodedGaKey.month,
-        promo_num: decodedGaKey.promo_num,
-        segment: decodedGaKey.segment,
-        subject_line: campaigns[i].settings.subject_line,
-        preview_text: campaigns[i].settings.preview_text,
-        send_time: campaigns[i].send_time,
-        google_analytics: `${campaigns[i].id}-${campaigns[i].tracking.google_analytics}`,
-        content: (await mailchimp.getCampaignContentData(campaigns[i].id)).data.html
-      });
-    }
-    else if (campaigns[i].type === "variate") {
-      let decodedGaKey = decodeGaKey(campaigns[i].tracking.google_analytics);
-      let variateContents = [], contents = (await mailchimp.getCampaignContentData(campaigns[i].id)).data.variate_contents;
-      contents.forEach(element => variateContents.push(element.html));
-
-      campaignData.push({
-        _id: campaigns[i].id,
-        list_id: process.env.CAS_AUDIENCE_LIST_ID,
-        title: campaigns[i].settings.title,
-        type: campaigns[i].type,
-        year: decodedGaKey.year,
-        quarter: decodedGaKey.quarter,
-        month: decodedGaKey.month,
-        promo_num: decodedGaKey.promo_num,
-        segment: decodedGaKey.segment,
-        google_analytics: campaigns[i].tracking.google_analytics,
-        variate_settings: campaigns[i].variate_settings,
-        variate_contents: variateContents
-      });
-    }
-    else {
-      invalidCampaign.push({
-        id: campaigns[i].id,
-        type: campaigns[i].type
-      });
-    }
-  }
-
+  let mc = new MailChimp();
+  let result = await mc.fetchCampaignData(site, startTime);
+  
   await resHandler.handleRes(req, res, next, 200, {
-    result: await mailchimp.importData("campaignData", campaignData),
-    invalidCampaign: invalidCampaign
+    result: await mc.importData("campaignData", result.campaignData),
+    invalidCampaign: result.invalidCampaign
   });
 }));
 

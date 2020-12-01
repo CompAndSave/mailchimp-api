@@ -6,7 +6,7 @@ const serverConfig = require('../../server-config');
 class GoogleAnalytic {
   constructor () {
     this.keyFile = path.join(__dirname, `../../${serverConfig.GoogleKeyFilePath}`);
-    this.gaCampaignReport = new MongoDB("gaCampaignReport");
+    this.gaCampaignReport = new MongoDB(process.env.GA_DB_REPORT_DATA);
     this.viewId = {
       cas: process.env.CAS_GA_VIEW_ID,
       ci: process.env.CI_GA_VIEW_ID,
