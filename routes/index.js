@@ -18,7 +18,7 @@ function checkSiteKey(site) {
 //  - site (e.g., "cas") - required
 //  - mode (full - import all data; quick - import MC and GA report data only; manual - select the particular data to import)
 //  - manual (required when manual mode is used. Accepted value: mc-campaign, mc-report, ga-report)
-//  - startTime (full mode or manual mc-campaign) (e.g., "2020-01-01")
+//  - startTime (Must be formatted as YYYY-MM-DD, e.g., "2020-01-01")
 //  - count (postive integer to include all campaigns at MailChimp, if count is less than the total no. of campaign at MailChimp, incomplete import will occur) (full mode only)
 //  - campaignId (only import report data for a particular MC campaign id. If it is used, all other parameters will be ignored)
 //
@@ -30,6 +30,7 @@ router.post('/import', asyncHandler(async (req, res, next) => {
   //
   req.setTimeout(3600000);
 
+  const startTime = new Date();
   let site = req.body.site;
   if (!checkSiteKey(site)) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-site-${site}` }); }
 
@@ -44,17 +45,19 @@ router.post('/import', asyncHandler(async (req, res, next) => {
 
   let mcCampaignResult, mcReportResult, gaReportResult, invalidCampaign, error;
   if (typeof req.body.campaignId === "string") {
-    mcReportResult = mc.importData("campaignReport", await mc.fetchReportData(undefined, req.body.campaignId)).catch(err => error = err);
-    gaReportResult = ga.importData(await ga.fetchGAData("cas", await mc.getCampaignDbData({ _id: req.body.campaignId }, { type: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1, google_analytics: 1, variate_settings: 1 }))).catch(err => error = err);
+    mcReportResult = mc.importData("campaignReport", await mc.fetchReportData(undefined, undefined, req.body.campaignId)).catch(err => error = err);
+    gaReportResult = ga.importData(await ga.fetchGAData("cas", await mc.getCampaignDbData({ _id: req.body.campaignId }, { type: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1, google_analytics: 1, send_time: 1, variate_settings: 1 }))).catch(err => error = err);
     [mcReportResult, gaReportResult] = await Promise.all([mcReportResult, gaReportResult]);
     if (error) { return await resHandler.handleRes(req, res, next, 400, { message: error }); }
   }
   else {
-    let mode = req.body.mode, manual = req.body.manual;
+    let mode = req.body.mode, manual = req.body.manual, startTime = typeof req.body.startTime === "undefined" ? serverConfig.DefaultStartTime : req.body.startTime;
+    if (typeof startTime !== "string" || !startTime.match(/^[\d]{4}-[\d]{2}-[\d]{2}$/)) {
+      return await resHandler.handleRes(req, res, next, 400, { message: `invalid-startTime-must-be-formatted-YYYY-MM-DD-${startTime}` });
+    }
 
     if (mode === "full" || (mode === "manual" && manual === "mc-campaign")) {
-      let startTime = req.body.startTime, count = typeof req.body.count !== "undefined" ? Number(req.body.count) : undefined;
-      if (isNaN(Date.parse(startTime))) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-startTime-${startTime}` }); }
+      let count = typeof req.body.count !== "undefined" ? Number(req.body.count) : undefined;
       if (typeof count !== "undefined" && (!Number.isInteger(count) || count < 1)) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-count-${req.body.count}` }); }
   
       let result = await mc.fetchCampaignData(site, startTime, count);
@@ -63,11 +66,13 @@ router.post('/import', asyncHandler(async (req, res, next) => {
     }
 
     if (mode === "full" || mode === "quick" || (mode === "manual" && manual === "mc-report")) {
-      mcReportResult = mc.importData("campaignReport", await mc.fetchReportData(site)).catch(err => error = err);
+      mcReportResult = mc.importData("campaignReport", await mc.fetchReportData(site, startTime)).catch(err => error = err);
     }
 
     if (mode === "full" || mode === "quick" || (mode === "manual" && manual === "ga-report")) {
-      gaReportResult = ga.importData(await ga.fetchGAData(site, await mc.getAllCampaignDbDatabySite(site, { type: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1, google_analytics: 1, variate_settings: 1 }))).catch(err => error = err);
+      gaReportResult = ga.importData(await ga.fetchGAData(site, await mc.getCampaignDbData(
+        { year: { $gte: Number(startTime.substring(0, 4)) }, month: { $gte: Number(startTime.substring(5, 7)) }},
+        { type: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1, google_analytics: 1, send_time: 1, variate_settings: 1 }))).catch(err => error = err);
     }
 
     [mcReportResult, gaReportResult] = await Promise.all([mcReportResult, gaReportResult]);
@@ -77,6 +82,9 @@ router.post('/import', asyncHandler(async (req, res, next) => {
   if (!mcCampaignResult && !mcReportResult && !gaReportResult && !invalidCampaign) {
     return await resHandler.handleRes(req, res, next, 400, { message: "no-import-is-made-check-if-input-is-valid" });
   }
+
+  const endTime = new Date();
+  console.log(`Time Used: ${endTime - startTime} ms`);
 
   await resHandler.handleRes(req, res, next, 200, {
     result: {

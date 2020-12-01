@@ -3,6 +3,11 @@ const path = require('path');
 const MongoDB = require("../mongoDB/MongoDB");
 const serverConfig = require('../../server-config');
 
+// determine how many api calls to run async to Google Analytics API servers
+// Google limits the maximum of concurrent api calls to 10
+//
+const MAX_CONCURRENT_CALLS = 10;
+
 class GoogleAnalytic {
   constructor () {
     this.keyFile = path.join(__dirname, `../../${serverConfig.GoogleKeyFilePath}`);
@@ -69,7 +74,8 @@ class GoogleAnalytic {
             quarter: doc.quarter,
             month: doc.month,
             promo_num: doc.promo_num,
-            segment: doc.segment
+            segment: doc.segment,
+            send_time: doc.variate_settings.send_times[0]
           });
         }
   
@@ -77,18 +83,28 @@ class GoogleAnalytic {
       }
     });
     let docs = [...mcData.filter(doc => typeof doc.google_analytics !== "undefined"), ...variateData];
-  
+
+    let gaReportData = [], loopData = [], loopCount = 0;
     for (let i = 0; i < docs.length; ++i) {
-      let result = await this.getGAData(site, {
-        startDate: serverConfig.GADataStartDate,
+      loopData.push(this.getGAData(site, {
+        startDate: docs[i].send_time.substring(0, 10),
         endDate: "today",
         metrics: "ga:transactions,ga:transactionsPerSession,ga:transactionRevenue,ga:sessions",
         dimensions: "ga:campaign",
         filters: `ga:campaign==${docs[i].google_analytics}`
-      });
-  
+      }));
+
+      if (loopCount >= MAX_CONCURRENT_CALLS - 1 || i >= docs.length - 1) {
+        loopData = await Promise.all(loopData);
+        loopData.forEach(item => gaReportData.push(item));
+        loopCount = 0; loopData = [];
+      }
+      else { ++loopCount; }
+    }
+
+    for (let i = 0; i < docs.length; ++i) { 
       let isNoData = false;
-      if (!result.data.rows || result.data.rows.length === 0 || result.data.rows[0].length === 0) { isNoData = true; }
+      if (!gaReportData[i].data.rows || gaReportData[i].data.rows.length === 0 || gaReportData[i].data.rows[0].length === 0) { isNoData = true; }
 
       let data = {
         _id: docs[i].google_analytics,
@@ -100,10 +116,10 @@ class GoogleAnalytic {
         month: docs[i].month,
         promo_num: docs[i].promo_num,
         segment: docs[i].segment,
-        transaction: !isNoData ? Number(result.data.rows[0][1]) : 0,
-        ecomm_conversion_rate: !isNoData ? Number(result.data.rows[0][2]) : 0,
-        revenue: !isNoData ? Number(result.data.rows[0][3]) : 0,
-        sessions: !isNoData ? Number(result.data.rows[0][4]) : 0
+        transaction: !isNoData ? Number(gaReportData[i].data.rows[0][1]) : 0,
+        ecomm_conversion_rate: !isNoData ? Number(gaReportData[i].data.rows[0][2]) : 0,
+        revenue: !isNoData ? Number(gaReportData[i].data.rows[0][3]) : 0,
+        sessions: !isNoData ? Number(gaReportData[i].data.rows[0][4]) : 0
       };
 
       if (docs[i].type === "variate-child") { data.mc_parent_id = docs[i].parent_id; }
