@@ -7,41 +7,21 @@ class MongoDB extends MongoDBOps {
     this.collectionName = collectionName;
   }
 
-  static async getDataByID(collectionName, id, site, projection) {
-    let queryFilter = { _id:id };
-    if (site) { queryFilter.site = site; }
+  static async getDataByID(collectionName, id, projection) {
+    let queryFilter = { _id: id };
 
     return Promise.resolve(await MongoDBOps.getData(collectionName, queryFilter, false, projection, undefined, undefined, undefined, connString));
   }
 
-  async getDataByID(id, site, projection) { return Promise.resolve(await MongoDB.getDataByID(this.collectionName, id, site, projection)); }
+  async getDataByID(id, projection) { return Promise.resolve(await MongoDB.getDataByID(this.collectionName, id, projection)); }
 
-  static async getDataBySku(collectionName, sku, site, projection) {
-    let queryFilter = { sku:sku };
-    if (site) { queryFilter.site = site; }
-
-    return Promise.resolve(await MongoDBOps.getData(collectionName, queryFilter, false, projection, undefined, undefined, undefined, connString));
-  }
-
-  async getDataBySku(sku, site, projection) { return Promise.resolve(await MongoDB.getDataBySku(this.collectionName, sku, site, projection)); }
-
-  static async getDataByPrinterId(collectionName, printerId, site, projection) {
-    let queryFilter = { printerId:printerId };
-    if (site) { queryFilter.site = site; }
-
-    return Promise.resolve(await MongoDBOps.getData(collectionName, queryFilter, false, projection, undefined, undefined, undefined, connString));
-  }
-
-  async getDataByPrinterId(printerId, site, projection) { return Promise.resolve(await MongoDB.getDataByPrinterId(this.collectionName, printerId, site, projection)); }
-
-  static async getAllData(collectionName, site, projection, sort, pagination) {
+  static async getAllData(collectionName, projection, sort, pagination) {
     let queryFilter = {};
-    if (site) { queryFilter.site = site; }
 
     return Promise.resolve(await MongoDBOps.getData(collectionName, queryFilter, false, projection, sort, pagination, false, connString));
   }
 
-  async getAllData(site, projection, sort, pagination) { return Promise.resolve(await MongoDB.getAllData(this.collectionName, site, projection, sort, pagination)); }
+  async getAllData(projection, sort, pagination) { return Promise.resolve(await MongoDB.getAllData(this.collectionName, projection, sort, pagination)); }
 
   static async insertOne(collectionName, doc) { return Promise.resolve(await MongoDBOps.writeData("insertOne", collectionName, doc, undefined, connString)); }
   async insertOne(doc) { return Promise.resolve(await super.writeData("insertOne", this.collectionName, doc)); }

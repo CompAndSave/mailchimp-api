@@ -1,6 +1,0 @@
-{
-    "AccessLogPath": "logs/access.log",
-    "ExpressErrorLogPath": "logs/express-error.log",
-    "CustomErrorLogPath": "logs/error.log",
-    "CustomWriteDBErrorLogPath": "logs/writeDBError.log"
-}
