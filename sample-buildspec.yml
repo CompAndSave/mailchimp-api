@@ -1,0 +1,36 @@
+version: 0.2
+
+env:
+  variables:
+     NODE_ENV: development
+     SANDBOX: true
+     CONN_STRING: YOUR_PROD_MONGODB_CONNECTION_STRING
+     SANDBOX_CONN_STRING: YOUR_SANDBOX_MONGODB_CONNECTION_STRING
+     MC_API_URL: https://us2.api.mailchimp.com/3.0/
+     MC_USERNAME: YOUR_MC_USERNAME
+     MC_API_KEY: YOUR_MC_API_KEY
+     MC_DB_CAMPAIGN_DATA: YOUR_MAILCHIMP_CAMPAIGN_DATA_COLLECTION_NAME
+     MC_DB_REPORT_DATA: YOUR_MAILCHIMP_CAMPAIGN_REPORT_COLLECTION_NAME
+     GA_DB_REPORT_DATA: YOUR_GOOGLE_ANALYTICS_CAMPAIGN_REPORT_COLLECTION_NAME
+     CAS_MC_AUDIENCE_ID: YOUR_MAILCHIMP_AUDIENCE_IDS_FOR_1ST_SITE
+     CI_MC_AUDIENCE_ID: YOUR_MAILCHIMP_AUDIENCE_IDS_FOR_2ND_SITE
+     TI_MC_AUDIENCE_ID: YOUR_MAILCHIMP_AUDIENCE_IDS_FOR_3RD_SITE
+     CAS_GA_VIEW_ID: YOUR_GOOGLE_ANALYTICS_VIEW_ID_FOR_1ST_SITE
+     CI_GA_VIEW_ID: YOUR_GOOGLE_ANALYTICS_VIEW_ID_FOR_2ND_SITE
+     TI_GA_VIEW_ID: YOUR_GOOGLE_ANALYTICS_VIEW_ID_FOR_3RD_SITE
+phases:
+  install:
+    commands:
+      - yum update -y -q
+    finally:
+      - echo install phase is done.
+  pre_build:
+    commands:
+      - npm install --no-progress --silent
+    finally:
+    - echo pre_build phase is done.
+  build:
+    commands:
+      - npm run-script lint
+    finally:
+    - echo build phase is done.
