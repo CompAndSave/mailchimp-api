@@ -1,0 +1,20 @@
+{
+  "AccessLogPath": "logs/access.log",
+  "ExpressErrorLogPath": "logs/express-error.log",
+  "CustomErrorLogPath": "logs/error.log",
+  "CustomWriteDBErrorLogPath": "logs/writeDBError.log",
+  "GoogleKeyFilePath": "keyfiles/email-reporting-system.json",
+  "GoogleAPIScope": "https://www.googleapis.com/auth/analytics.readonly",
+  "SiteKey" : ["cas", "ci", "ti"],
+  "MCAudienceIds" : {
+    "cas": "ff7c1a4442",
+    "ci": "95d7e12ce4",
+    "ti": "b8f84f7ca5"
+  },
+  "GAViewIds": {
+    "cas": "367382",
+    "ci": "35355105",
+    "ti": "57654157"
+  },
+  "DefaultStartTime": "2020-01-01"
+}
