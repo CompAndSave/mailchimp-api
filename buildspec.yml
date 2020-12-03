@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo Entered the install phase...
+      - yum update -y
+    finally:
+      - echo install phase is done.
+  pre_build:
+    commands:
+      - echo Entered the pre_build phase...
+      - npm install --no-progress --silent
+    finally:
+    - echo pre_build phase is done.
+  build:
+    commands:
+      - echo Entered the build phase...
+      - npm start
+    finally:
+    - echo build phase is done.
