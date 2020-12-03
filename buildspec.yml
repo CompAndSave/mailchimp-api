@@ -4,7 +4,7 @@ phases:
   install:
     commands:
       - echo Entered the install phase...
-      - yum update -y
+      - yum update -y -q
     finally:
       - echo install phase is done.
   pre_build:
