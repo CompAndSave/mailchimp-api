@@ -7,14 +7,14 @@
   "GoogleAPIScope": "https://www.googleapis.com/auth/analytics.readonly",
   "SiteKey" : ["cas", "ci", "ti"],
   "MCAudienceIds" : {
-    "cas": "ff7c1a4442",
-    "ci": "95d7e12ce4",
-    "ti": "b8f84f7ca5"
+    "cas": "CAS_MC_AUDIENCE_ID",
+    "ci": "CI_MC_AUDIENCE_ID",
+    "ti": "TI_MC_AUDIENCE_ID"
   },
   "GAViewIds": {
-    "cas": "367382",
-    "ci": "35355105",
-    "ti": "57654157"
+    "cas": "CAS_GA_VIEW_ID",
+    "ci": "CI_GA_VIEW_ID",
+    "ti": "TI_GA_VIEW_ID"
   },
   "DefaultStartTime": "2020-01-01"
 }

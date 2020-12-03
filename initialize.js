@@ -25,6 +25,10 @@ Log.initialize(
   process.env.NODE_ENV !== "production"
 );
 
+// initialize MC Audience Ids and Google Analytic ViewIds
+serverConfig.SiteKey.forEach(key => serverConfig.MCAudienceIds[key] = process.env[serverConfig.MCAudienceIds[key]]);
+serverConfig.SiteKey.forEach(key => serverConfig.GAViewIds[key] = process.env[serverConfig.GAViewIds[key]]);
+
 // catching signals and clean up connections
 // note: SIGKILL is not working at linux environment.
 //
