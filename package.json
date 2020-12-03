@@ -3,7 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lubu12/mailchimp-api"
+  },
+  "author": "Andrew Yeung",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lubu12/mailchimp-api/issues"
   },
   "dependencies": {
     "cas-common-lib": "^0.5.0",
