@@ -6,8 +6,6 @@ const { GoogleAnalytic } = require('../classes/Main');
 const resHandler = require('../services/resHandler');
 const serverConfig = require('../server-config.json');
 
-Anc;
-
 function checkSiteKey(site) {
   return serverConfig.SiteKey.filter(key => key === site).length > 0;
 }
