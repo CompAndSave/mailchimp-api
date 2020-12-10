@@ -3,3 +3,6 @@
 /logs/*.log
 /keyfiles/*
 !/keyfiles/readme.md
+/.serverless/*
+/mailchimp-api/*
+serverless.yml

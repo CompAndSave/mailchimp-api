@@ -1,0 +1,47 @@
+service: mailchimp-api
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-west-2'}
+  httpApi:
+    authorizers:
+      serviceAuthorizer:
+        # Point request header at which JWT token will be provided
+        identitySource: $request.header.Authorization
+        # Issuer url, in case of Cognito User Pools url will be like: 
+        # https://cognito-idp.${region}.amazonaws.com/${cognitoPoolId}
+        issuerUrl: YOUR_COGNITO_ISSUER_URL
+        # Audience for which access is intended
+        # In case of Cognito User Pools we need to list client ids
+        audience:
+          - YOUR_COGNITO_APP_CLIENT_ID
+
+functions:
+  app:
+    handler: app-serverless.handler
+    events:
+      - httpApi:
+          method: GET
+          path: /campaign-report
+          authorizer: serviceAuthorizer
+      - httpApi:
+          method: GET
+          path: /campaign-report/summary
+          authorizer: serviceAuthorizer
+      - httpApi:
+          method: POST
+          path: /import
+          authorizer: serviceAuthorizer
+
+plugins:
+  - serverless-domain-manager
+
+custom:
+  customDomain:
+    domainName: YOUR_CUSTOM_API_DOMAIN_NAME
+    basePath: ''
+    stage: ${self:provider.stage}
+    createRoute53Record: true
