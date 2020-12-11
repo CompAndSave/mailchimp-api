@@ -1,6 +1,6 @@
 {
   "name": "mailchimp-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
@@ -11,7 +11,7 @@
     "url": "git+https://github.com/lubu12/mailchimp-api"
   },
   "author": "Andrew Yeung",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/lubu12/mailchimp-api/issues"
   },
