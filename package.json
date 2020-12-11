@@ -1,12 +1,21 @@
 {
-  "name": "datafeed-api",
-  "version": "0.0.0",
+  "name": "mailchimp-api",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lubu12/mailchimp-api"
+  },
+  "author": "Andrew Yeung",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lubu12/mailchimp-api/issues"
   },
   "dependencies": {
-    "axios": "^0.19.2",
     "cas-common-lib": "^0.5.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
@@ -17,16 +26,19 @@
     "express-async-handler": "^1.1.4",
     "express-winston": "^4.0.5",
     "fs": "0.0.1-security",
+    "googleapis": "^65.0.0",
     "helmet": "^3.23.3",
     "http-errors": "^1.8.0",
+    "mailchimp-import": "^0.2.0",
     "moment-timezone": "^0.5.32",
     "mongodb-ops": "^0.3.4",
     "morgan": "^1.10.0",
-    "nodemon": "^2.0.4",
+    "serverless-http": "^2.6.0",
     "winston": "^3.3.3"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
-    "eslint": "^7.9.0"
+    "eslint": "^7.9.0",
+    "serverless-domain-manager": "^5.1.0"
   }
 }

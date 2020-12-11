@@ -1,0 +1,74 @@
+version: 0.2
+
+#env:
+  #variables:
+  #parameter-store:
+     # key: "value"
+     # key: "value"
+  #secrets-manager:
+     # key: secret-id:json-key:version-stage:version-id
+     # key: secret-id:json-key:version-stage:version-id
+  #exported-variables:
+     # - variable
+     # - variable
+  #git-credential-helper: yes
+#batch:
+  #fast-fail: true
+  #build-list:
+  #build-matrix:
+  #build-graph:
+phases:
+  install:
+    #If you use the Ubuntu standard image 2.0 or later, you must specify runtime-versions.
+    #If you specify runtime-versions and use an image other than Ubuntu standard image 2.0, the build fails.
+    #runtime-versions:
+      # name: version
+      # name: version
+    commands:
+      - yum update -y -q
+      - npm install --silent --no-progress -g npm
+      - npm install --silent --no-progress -g serverless
+    finally:
+    - echo install phase is done.
+  pre_build:
+    commands:
+      - npm install --no-progress --silent
+      - cp $CODEBUILD_SRC_DIR_SourceArtifactParameters/* .
+      - cp $CODEBUILD_SRC_DIR_SourceArtifactParameters/.env .
+      - ls -al
+    finally:
+    - echo pre_build phase is done.
+  build:
+    commands:
+      - npm run-script lint
+      - mkdir -p target/stg
+      - mkdir target/prod
+      - serverless package --package target/stg --stage stg -v
+      - serverless package --package target/prod --stage prod -v
+    finally:
+    - echo build phase is done.
+  #post_build:
+    #commands:
+      # - command
+      # - command
+#reports:
+  #report-name-or-arn:
+    #files:
+      # - location
+      # - location
+    #base-directory: location
+    #discard-paths: yes
+    #file-format: JunitXml | CucumberJson
+artifacts:
+  files:
+    - target/**/*
+    - serverless.yml
+    - deploy.sh
+    # - location
+    # - location
+  #name: $(date +%Y-%m-%d)
+  #discard-paths: yes
+  #base-directory: location
+#cache:
+  #paths:
+    # - paths

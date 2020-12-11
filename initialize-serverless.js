@@ -1,5 +1,3 @@
-const path = require('path');
-const { Log } = require('cas-common-lib');
 const MongoDBOps = require('mongodb-ops');
 const serverConfig = require('./server-config');
 
@@ -16,12 +14,6 @@ String.prototype.titleCase = function() {
   }
   return splitStrArray.join(" ");
 }
-
-Log.initialize(
-  path.join(__dirname, serverConfig.CustomErrorLogPath),
-  path.join(__dirname, serverConfig.CustomWriteDBErrorLogPath),
-  process.env.NODE_ENV !== "production"
-);
 
 // initialize MC Audience Ids and Google Analytic ViewIds
 serverConfig.SiteKey.forEach(key => serverConfig.MCAudienceIds[key] = process.env[serverConfig.MCAudienceIds[key]]);
