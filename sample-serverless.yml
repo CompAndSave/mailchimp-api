@@ -1,10 +1,10 @@
-service: mailchimp-api
+service: mailchimp-api-serverless
 useDotenv: true
 
 provider:
   name: aws
   runtime: nodejs12.x
-  stage: ${opt:stage, 'dev'}
+  stage: ${opt:stage, 'stg'}
   region: ${opt:region, 'us-west-2'}
   httpApi:
     authorizers:
@@ -35,13 +35,3 @@ functions:
           method: POST
           path: /import
           authorizer: serviceAuthorizer
-
-plugins:
-  - serverless-domain-manager
-
-custom:
-  customDomain:
-    domainName: YOUR_CUSTOM_API_DOMAIN_NAME
-    basePath: ''
-    stage: ${self:provider.stage}
-    createRoute53Record: true
