@@ -24,11 +24,11 @@ function checkSiteKey(site) {
 //
 router.post('/import', asyncHandler(async (req, res, next) => {
 
-  // Set request timeout as 60 mins
+  // Set request timeout as 15 mins (Lambda max timeout is 15 mins)
   // The default timeout for nodejs is 2mins and it is not long enough for this request to be done
   // Browser will automatically make another request after timeout and it will cause the script run again asynchronously
   //
-  req.setTimeout(3600000);
+  req.setTimeout(900000);
 
   const startTime = new Date();
   let site = req.body.site;
