@@ -76,7 +76,7 @@ router.post('/import', asyncHandler(async (req, res, next) => {
     }
 
     [mcReportResult, gaReportResult] = await Promise.all([mcReportResult, gaReportResult]);
-    if (error) { return await resHandler.handleRes(req, res, next, 400, { message: error }); }
+    if (error) { return await resHandler.handleRes(req, res, next, 400, { message: error }, error); }
   }
 
   if (!mcCampaignResult && !mcReportResult && !gaReportResult && !invalidCampaign) {
