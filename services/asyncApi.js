@@ -4,15 +4,13 @@ const serverConfig = require('../server-config.json');
 
 // message param should be stringified
 //
-async function sendSNS(message) {
-  console.log("publish message now");
-  
+async function sendSNS(message) {  
   let sns = new aws.SNS();
   let error, result = await (new Promise((resolve, reject) => {
     sns.publish({
       Message: message, 
-      Subject: "SNS message from MailChimp-api at Lambda",
-      TopicArn: "arn:aws:sns:us-west-2:982834960524:mailchimp-reporting-api-import-result"
+      Subject: serverConfig.SNS_SUBJECT,
+      TopicArn: serverConfig.SNS_TOPIC_ARN
     }, (err, data) => {
       if (err) { reject(err); }       // an error occurred
       else { resolve(data); }         // successful response
