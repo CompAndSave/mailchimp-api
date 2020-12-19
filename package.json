@@ -40,6 +40,7 @@
   "devDependencies": {
     "babel-eslint": "^10.1.0",
     "eslint": "^7.9.0",
-    "serverless-domain-manager": "^5.1.0"
+    "serverless-domain-manager": "^5.1.0",
+    "serverless-dotenv-plugin": "^3.1.0"
   }
 }

@@ -3,7 +3,6 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
-require('dotenv').config({ path: path.join(__dirname, '.env')});
 require('./initialize-serverless');
 const asyncApi = require('./services/asyncApi');
 
