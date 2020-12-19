@@ -1,5 +1,6 @@
 const aws = require("aws-sdk");
-const { timer }= require('cas-common-lib');
+const { ImportData } = require('../classes/Main');
+const serverConfig = require('../server-config.json');
 
 // message param should be stringified
 //
@@ -32,20 +33,31 @@ async function worker(records) {
   records.forEach(record => {
     jobs.push({
       id: record.messageId,
-      requestBody: record.body
+      requestBody: JSON.parse(record.body)
     });
   });
 
-  await timer.timeout(2000); // timeout 2s
+  // For import async api call, we have limit only 1 api call can be invoked every time
+  //
+  let importData = new ImportData(
+    serverConfig.MCAudienceIds,
+    process.env.MC_USERNAME,
+    process.env.MC_API_KEY,
+    process.env.MC_DB_CAMPAIGN_DATA,
+    process.env.MC_DB_REPORT_DATA,
+    process.env.MC_API_URL,
+    serverConfig.SiteKey,
+    serverConfig.DefaultStartTime
+  );
+
+  let req = jobs[0].requestBody;
+  let error, result = await importData.import(req.site, req.campaignId, req.mode, req.manual, req.startTime, req.count).catch(err => error = err);
 
   let response = {
     id: jobs[0].id,
-    httpStatus: 200,
-    request: JSON.stringify(jobs[0]),
-    data: {
-      success: true,
-      message: "Good result"
-    }
+    httpStatus: error ? 400 : 200,
+    request: jobs[0],
+    response: typeof error === "undefined" ? { result: result } : { message: error }
   }
 
   response = JSON.stringify(response)
