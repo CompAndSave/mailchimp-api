@@ -9,8 +9,8 @@ async function sendSNS(message) {
   let error, result = await (new Promise((resolve, reject) => {
     sns.publish({
       Message: message, 
-      Subject: serverConfig.SNS_SUBJECT,
-      TopicArn: serverConfig.SNS_TOPIC_ARN
+      Subject: process.env.SNS_SUBJECT,
+      TopicArn: process.env.SNS_TOPIC_ARN
     }, (err, data) => {
       if (err) { reject(err); }       // an error occurred
       else { resolve(data); }         // successful response
