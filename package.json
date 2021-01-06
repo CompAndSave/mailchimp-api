@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "aws-sdk": "^2.812.0",
-    "cas-common-lib": "^0.5.0",
+    "cas-common-lib": "^0.5.2",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "debug": "^4.1.1",
@@ -30,7 +30,7 @@
     "googleapis": "^65.0.0",
     "helmet": "^3.23.3",
     "http-errors": "^1.8.0",
-    "mailchimp-import": "^0.2.0",
+    "mailchimp-import": "^0.2.1",
     "moment-timezone": "^0.5.32",
     "mongodb-ops": "^0.3.4",
     "morgan": "^1.10.0",
