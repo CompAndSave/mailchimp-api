@@ -1,3 +1,5 @@
+// This is for serverless setup at AWS. It requires SNS, SQS, API Gateway and Lambda.
+
 const aws = require("aws-sdk");
 const { ImportData } = require('../classes/Main');
 const serverConfig = require('../server-config.json');
