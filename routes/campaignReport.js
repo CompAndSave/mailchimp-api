@@ -58,6 +58,7 @@ function createDataReturn(data, gaData, showVariate, childId) {
 
 // Get /campaign-report
 // body params:
+//  - site (required)
 //  - year
 //  - quarter
 //  - month
@@ -66,6 +67,9 @@ function createDataReturn(data, gaData, showVariate, childId) {
 //  - showVariate (boolean, only available when groupBy is segment) - Default is false
 //
 router.get('/', asyncHandler(async (req, res, next) => {
+  let site = req.body.site;
+  if (serverConfig.SiteKey.filter(siteKey => siteKey === site).length !== 1) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-site-${site}` });}
+
   let year = req.body.year ? Number(req.body.year) : undefined;
   let quarter = req.body.quarter ? Number(req.body.quarter) : undefined;
   let month = req.body.month ? Number(req.body.month) : undefined;
@@ -81,7 +85,7 @@ router.get('/', asyncHandler(async (req, res, next) => {
     return await resHandler.handleRes(req, res, next, 400, { message: `invalid-groupBy-${groupBy}` });
   }
 
-  let query = {}, mc = new MailChimpImport(
+  let query = { site: site }, mc = new MailChimpImport(
     serverConfig.MCAudienceIds,
     process.env.MC_USERNAME,
     process.env.MC_API_KEY,
@@ -197,15 +201,16 @@ router.get('/', asyncHandler(async (req, res, next) => {
       response.push(createDataReturn(mcData, gaData, showVariate));
   }
 
-  await resHandler.handleRes(req, res, next, 200, { result: response });
+  await resHandler.handleRes(req, res, next, 200, { site: site, result: response });
 }));
 
 // Get /campaign-report/summary
 // Return the no. of campaign counts for all report data
 //
-// Support site params in future
-//
 router.get('/summary', asyncHandler(async (req, res, next) => {
+  let site = req.body.site;
+  if (serverConfig.SiteKey.filter(siteKey => siteKey === site).length !== 1) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-site-${site}` });}
+
   let mc = new MailChimpImport(
     serverConfig.MCAudienceIds,
     process.env.MC_USERNAME,
@@ -214,7 +219,8 @@ router.get('/summary', asyncHandler(async (req, res, next) => {
     process.env.MC_DB_REPORT_DATA,
     process.env.MC_API_URL
   );
-  let mcData = await mc.getAllCampaignDbDatabySite("cas", { type: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1, variate_settings: 1 });
+
+  let mcData = await mc.getAllCampaignDbDatabySite(site, { type: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1, variate_settings: 1 });
   let result = {};
 
   let yearSet = new Set();
@@ -253,7 +259,7 @@ router.get('/summary', asyncHandler(async (req, res, next) => {
     })(year);
   });
 
-  await resHandler.handleRes(req, res, next, 200, { result: result });
+  await resHandler.handleRes(req, res, next, 200, { site: site, result: result });
 }));
 
 module.exports = router;

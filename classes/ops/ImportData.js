@@ -33,16 +33,24 @@ class ImportData {
         let result = await this.mc.fetchCampaignData(site, startTime, count);
         mcCampaignResult = await this.mc.importData("campaignData", result.campaignData);
         invalidCampaign = result.invalidCampaign;
+
+        console.log("mc-campaign import is done");
       }
   
       if (mode === "full" || mode === "quick" || (mode === "manual" && manual === "mc-report")) {
         mcReportResult = this.mc.importData("campaignReport", await this.mc.fetchReportData(site, startTime));
+
+        console.log("mc-report import is done");
       }
   
       if (mode === "full" || mode === "quick" || (mode === "manual" && manual === "ga-report")) {
+        let year = Number(startTime.substring(0, 4)), month = Number(startTime.substring(5, 7));
+
         gaReportResult = this.ga.importData(await this.ga.fetchGAData(site, await this.mc.getCampaignDbData(
-          { year: { $gte: Number(startTime.substring(0, 4)) }, month: { $gte: Number(startTime.substring(5, 7)) }},
+          { list_id: this.mc.audienceId[site], $or: [{ year: { $gt: year }}, { year: { $gte: year }, month: { $gte: month }}]},
           { type: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1, google_analytics: 1, send_time: 1, variate_settings: 1 })));
+
+        console.log("ga-report import is done");
       }
   
       [mcReportResult, gaReportResult] = await Promise.all([mcReportResult, gaReportResult]);
