@@ -58,7 +58,7 @@ function createDataReturn(data, gaData, showVariate, childId) {
 
 // Get /campaign-report
 // body params:
-//  - site (required)
+//  - site (required when groupBy is segment)
 //  - year
 //  - quarter
 //  - month
@@ -68,7 +68,7 @@ function createDataReturn(data, gaData, showVariate, childId) {
 //
 router.get('/', asyncHandler(async (req, res, next) => {
   let site = req.body.site;
-  if (serverConfig.SiteKey.filter(siteKey => siteKey === site).length !== 1) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-site-${site}` });}
+  if (typeof site !== "undefined" && serverConfig.SiteKey.filter(siteKey => siteKey === site).length !== 1) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-site-${site}` });}
 
   let year = req.body.year ? Number(req.body.year) : undefined;
   let quarter = req.body.quarter ? Number(req.body.quarter) : undefined;
@@ -77,6 +77,7 @@ router.get('/', asyncHandler(async (req, res, next) => {
   let groupBy = typeof req.body.groupBy === "string" ? req.body.groupBy.toLowerCase() : req.body.groupBy;
   let showVariate = groupBy === "segment" && (req.body.showVariate || req.body.showVariate === "true") ? true : false;
 
+  if (typeof site === "undefined" && groupBy === "segment") { return await resHandler.handleRes(req, res, next, 400, { message: `site-is-required-when-groupBy-is-segment` }); }
   if (typeof year !== "undefined" && (isNaN(year) || !Number.isInteger(year))) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-year-${req.body.year}` }); }
   if (typeof quarter !== "undefined" && (isNaN(quarter) || !Number.isInteger(quarter)) || quarter < 1 || quarter > 4) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-quarter-${req.body.quarter}` }); }
   if (typeof month !== "undefined" && (isNaN(month) || !Number.isInteger(month)) || month < 1 || month > 12) { return await resHandler.handleRes(req, res, next, 400, { message: `invalid-month-${req.body.month}` }); }
@@ -85,7 +86,7 @@ router.get('/', asyncHandler(async (req, res, next) => {
     return await resHandler.handleRes(req, res, next, 400, { message: `invalid-groupBy-${groupBy}` });
   }
 
-  let query = { site: site }, mc = new MailChimpImport(
+  let query = {}, mc = new MailChimpImport(
     serverConfig.MCAudienceIds,
     process.env.MC_USERNAME,
     process.env.MC_API_KEY,
@@ -93,6 +94,7 @@ router.get('/', asyncHandler(async (req, res, next) => {
     process.env.MC_DB_REPORT_DATA,
     process.env.MC_API_URL
   );
+  if (site) { query.site = site; }
   if (year) { query.year = year; }
   if (quarter) { query.quarter = quarter; }
   if (month) { query.month = month; }
@@ -201,7 +203,7 @@ router.get('/', asyncHandler(async (req, res, next) => {
       response.push(createDataReturn(mcData, gaData, showVariate));
   }
 
-  await resHandler.handleRes(req, res, next, 200, { site: site, result: response });
+  await resHandler.handleRes(req, res, next, 200, site ? { site: site, result: response } : { result: response });
 }));
 
 // Get /campaign-report/summary
