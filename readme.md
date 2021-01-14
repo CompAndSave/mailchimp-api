@@ -101,4 +101,4 @@ SNS_SUBJECT = YOUR_SNS_SUBJECT
 - https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html#build-spec-ref-example
 
 #### Image for API Gateway with SQS integration configuration
-![API Gateway with SQS](https://github.com/lubu12/mailchipm-api/blob/develop/images/apig-sqs-integration.png?raw=true)
+![API Gateway with SQS](https://raw.githubusercontent.com/lubu12/mailchimp-api/develop/images/apig-sqs-integration.png)
