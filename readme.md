@@ -94,6 +94,8 @@ SNS_SUBJECT = YOUR_SNS_SUBJECT
 - https://www.serverless.com/framework/docs/providers/aws/guide/packaging/
 - https://www.jeremydaly.com/serverless-consumers-with-lambda-and-sqs-triggers/
 - https://codeburst.io/100-serverless-asynchronous-api-with-apig-sqs-and-lambda-2506a039b4d
+- https://medium.com/@pranaysankpal/aws-api-gateway-proxy-for-sqs-simple-queue-service-5b08fe18ce50
+- https://www.serverless.com/framework/docs/providers/aws/guide/variables/
 
 #### CI/CD with Serverless References:
 - https://medium.com/quantica/setup-ci-cd-pipeline-with-aws-lambda-and-serverless-framework-f624773f355e
