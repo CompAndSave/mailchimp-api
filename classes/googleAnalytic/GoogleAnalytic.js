@@ -84,22 +84,35 @@ class GoogleAnalytic {
     });
     let docs = [...mcData.filter(doc => typeof doc.google_analytics !== "undefined"), ...variateData];
 
-    let gaReportData = [], loopData = [], loopCount = 0;
+    let gaReportData = [], loopData = [], loopCount = 0, removeIndex = [];
     for (let i = 0; i < docs.length; ++i) {
-      loopData.push(this.getGAData(site, {
-        startDate: docs[i].send_time.substring(0, 10),
-        endDate: "today",
-        metrics: "ga:transactions,ga:transactionsPerSession,ga:transactionRevenue,ga:sessions",
-        dimensions: "ga:campaign",
-        filters: `ga:campaign==${docs[i].google_analytics}`
-      }));
-
+      
+      // Check if the campaign is only scheduled but not yet launched
+      // MC will have the scheduled campaign data available and it will cause future start date issue
+      //
+      if (new Date(docs[i].send_time) < new Date()) {
+        loopData.push(this.getGAData(site, {
+          startDate: docs[i].send_time.substring(0, 10),
+          endDate: "today",
+          metrics: "ga:transactions,ga:transactionsPerSession,ga:transactionRevenue,ga:sessions",
+          dimensions: "ga:campaign",
+          filters: `ga:campaign==${docs[i].google_analytics}`
+        }));
+      }
+      else { removeIndex.push(i); }
+  
       if (loopCount >= MAX_CONCURRENT_CALLS - 1 || i >= docs.length - 1) {
         loopData = await Promise.all(loopData);
         loopData.forEach(item => gaReportData.push(item));
         loopCount = 0; loopData = [];
       }
       else { ++loopCount; }
+    }
+
+    // Remove the scheduled campaign from array
+    //
+    for (let i = removeIndex.length - 1; i >= 0; --i) {
+      docs.splice(removeIndex[i], 1);
     }
 
     for (let i = 0; i < docs.length; ++i) { 

@@ -22,7 +22,7 @@
               "cloudformation:UpdateStack"
           ],
           "Resource": [
-              "arn:aws:cloudformation:us-west-2:*:stack/mailchimp-api-serverless-stg/*"
+              "arn:aws:cloudformation:us-west-2:*:stack/mailchimp-api-serverless-prod/*"
           ]
       },
       {
@@ -30,7 +30,8 @@
           "Action": [
               "lambda:Get*",
               "lambda:List*",
-              "lambda:CreateFunction"
+              "lambda:CreateFunction",
+              "lambda:CreateEventSourceMapping"
           ],
           "Resource": [
               "*"
@@ -78,7 +79,7 @@
               "lambda:Update*"
           ],
           "Resource": [
-              "arn:aws:lambda:us-west-2:*:function:mailchimp-api-serverless-stg-*"
+              "arn:aws:lambda:us-west-2:*:function:mailchimp-api-serverless-prod-*"
           ]
       },
       {
@@ -93,7 +94,8 @@
       {
           "Effect": "Allow",
           "Action": [
-              "iam:PassRole"
+              "iam:PassRole",
+              "iam:AttachRolePolicy"
           ],
           "Resource": [
               "arn:aws:iam::*:role/*"
@@ -106,17 +108,18 @@
               "iam:CreateRole",
               "iam:PutRolePolicy",
               "iam:DeleteRolePolicy",
-              "iam:DeleteRole"
+              "iam:DeleteRole",
+              "iam:DetachRolePolicy"
           ],
           "Resource": [
-              "arn:aws:iam::*:role/mailchimp-api-serverless-stg-us-west-2-lambdaRole"
+              "arn:aws:iam::*:role/mailchimp-api-serverless-prod-us-west-2-lambdaRole"
           ]
       },
       {
           "Effect": "Allow",
           "Action": "sqs:*",
           "Resource": [
-              "arn:aws:sqs:*:*:mailchimp-api-serverless-stg-us-west-2"
+              "arn:aws:sqs:*:*:mailchimp-api-serverless-prod-us-west-2"
           ]
       },
       {
@@ -167,7 +170,7 @@
               "events:Delete*"
           ],
           "Resource": [
-              "arn:aws:events:*:*:rule/mailchimp-api-serverless-stg-us-west-2"
+              "arn:aws:events:*:*:rule/mailchimp-api-serverless-prod-us-west-2"
           ]
       },
       {
@@ -176,8 +179,18 @@
               "events:DescribeRule"
           ],
           "Resource": [
-              "arn:aws:events:us-west-2:*:rule/mailchimp-api-serverless-stg-*"
+              "arn:aws:events:us-west-2:*:rule/mailchimp-api-serverless-prod-*"
           ]
+      },
+      {
+          "Effect": "Allow",
+          "Action": [
+              "ec2:DescribeSecurityGroups",
+              "ec2:DescribeSubnets",
+              "ec2:DescribeVpcs",
+              "ec2:DescribeNetworkInterfaces"
+          ],
+          "Resource": "*"
       }
   ]
 }
