@@ -8,39 +8,39 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lubu12/mailchimp-api"
+    "url": "git+https://github.com/CompAndSave/mailchimp-api"
   },
   "author": "Andrew Yeung",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lubu12/mailchimp-api/issues"
+    "url": "https://github.com/CompAndSave/mailchimp-api/issues"
   },
   "dependencies": {
-    "aws-sdk": "^2.812.0",
-    "cas-common-lib": "^0.5.2",
+    "aws-sdk": "^2.848.0",
+    "cas-common-lib": "^0.5.3",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
-    "debug": "^4.1.1",
+    "debug": "^4.3.1",
     "dotenv": "^8.2.0",
-    "ejs": "^3.1.3",
+    "ejs": "^3.1.6",
     "express": "^4.17.1",
     "express-async-handler": "^1.1.4",
-    "express-winston": "^4.0.5",
+    "express-winston": "^4.1.0",
     "fs": "0.0.1-security",
     "googleapis": "^65.0.0",
     "helmet": "^3.23.3",
     "http-errors": "^1.8.0",
-    "mailchimp-import": "^0.2.3",
-    "moment-timezone": "^0.5.32",
-    "mongodb-ops": "^0.3.4",
+    "mailchimp-import": "^0.2.4",
+    "moment-timezone": "^0.5.33",
+    "mongodb-ops": "^0.3.5",
     "morgan": "^1.10.0",
-    "serverless-http": "^2.6.0",
+    "serverless-http": "^2.7.0",
     "winston": "^3.3.3"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
-    "eslint": "^7.9.0",
+    "eslint": "^7.20.0",
     "serverless-domain-manager": "^5.1.0",
-    "serverless-dotenv-plugin": "^3.1.0"
+    "serverless-dotenv-plugin": "^3.7.2"
   }
 }
