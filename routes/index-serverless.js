@@ -47,7 +47,8 @@ router.post('/import', asyncHandler(async (req, res, next) => {
     process.env.MC_API_KEY,
     process.env.MC_DB_CAMPAIGN_DATA,
     process.env.MC_DB_REPORT_DATA,
-    process.env.MC_API_URL
+    process.env.MC_API_URL,
+    process.env.SANDBOX === "false" ? process.env.CONN_STRING : process.env.SANDBOX_CONN_STRING
   );
 
   let mcCampaignResult, mcReportResult, gaReportResult, invalidCampaign, error;

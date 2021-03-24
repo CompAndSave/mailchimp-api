@@ -92,7 +92,8 @@ router.get('/', asyncHandler(async (req, res, next) => {
     process.env.MC_API_KEY,
     process.env.MC_DB_CAMPAIGN_DATA,
     process.env.MC_DB_REPORT_DATA,
-    process.env.MC_API_URL
+    process.env.MC_API_URL,
+    process.env.SANDBOX === "false" ? process.env.CONN_STRING : process.env.SANDBOX_CONN_STRING
   );
   if (site) { query.site = site; }
   if (year) { query.year = year; }
@@ -219,7 +220,8 @@ router.get('/summary', asyncHandler(async (req, res, next) => {
     process.env.MC_API_KEY,
     process.env.MC_DB_CAMPAIGN_DATA,
     process.env.MC_DB_REPORT_DATA,
-    process.env.MC_API_URL
+    process.env.MC_API_URL,
+    process.env.SANDBOX === "false" ? process.env.CONN_STRING : process.env.SANDBOX_CONN_STRING
   );
 
   let mcData = await mc.getAllCampaignDbDatabySite(site, { type: 1, year: 1, quarter: 1, month: 1, promo_num: 1, segment: 1, variate_settings: 1 });

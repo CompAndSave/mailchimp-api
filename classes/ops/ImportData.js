@@ -6,7 +6,7 @@ class ImportData {
     this.siteList = siteList;
     this.defaultStartTime = defaultStartTime;
     this.ga = new GoogleAnalytic();
-    this.mc = new MailChimpImport(mcAudienceIds, mcUserName, mcApiKey, mcDbCampaignData, mcDbReportData, mcApiUrl);
+    this.mc = new MailChimpImport(mcAudienceIds, mcUserName, mcApiKey, mcDbCampaignData, mcDbReportData, mcApiUrl, process.env.SANDBOX === "false" ? process.env.CONN_STRING : process.env.SANDBOX_CONN_STRING);
   }
 
   isValidSite(site) { return this.siteList.filter(key => key === site).length > 0; }
