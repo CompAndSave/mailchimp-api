@@ -30,9 +30,9 @@
     "googleapis": "^65.0.0",
     "helmet": "^3.23.3",
     "http-errors": "^1.8.0",
-    "mailchimp-import": "^0.2.7",
+    "mailchimp-import": "^0.2.8",
     "moment-timezone": "^0.5.33",
-    "mongodb-ops": "^0.4.2",
+    "mongodb-ops": "^0.6.0",
     "morgan": "^1.10.0",
     "serverless-http": "^2.7.0",
     "winston": "^3.3.3"
