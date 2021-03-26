@@ -1,7 +1,8 @@
 const { google } = require('googleapis');
 const path = require('path');
-const MongoDB = require("../mongoDB/MongoDB");
+const { MongoDBToolSet } = require('mongodb-ops');
 const serverConfig = require('../../server-config');
+const connString = process.env.SANDBOX === "false" ? process.env.CONN_STRING : process.env.SANDBOX_CONN_STRING;
 
 // determine how many api calls to run async to Google Analytics API servers
 // Google limits the maximum of concurrent api calls to 10
@@ -11,7 +12,7 @@ const MAX_CONCURRENT_CALLS = 10;
 class GoogleAnalytic {
   constructor () {
     this.keyFile = path.join(__dirname, `../../${serverConfig.GoogleKeyFilePath}`);
-    this.gaCampaignReport = new MongoDB(process.env.GA_DB_REPORT_DATA);
+    this.gaCampaignReport = new MongoDBToolSet(process.env.GA_DB_REPORT_DATA, connString);
     this.viewId = serverConfig.GAViewIds;
   }
 

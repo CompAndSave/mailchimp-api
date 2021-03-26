@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------------
 // This route is not going to be used at serverless setting.  Just for reference.
-// Import logic will be process at /services/import.js
+// Import logic will be process at /services/asyncApi.js
 // ------------------------------------------------------------------------------
 
 var express = require('express');

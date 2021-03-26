@@ -1,6 +1,6 @@
 const path = require('path');
 const { Log } = require('cas-common-lib');
-const MongoDBOps = require('mongodb-ops');
+const { MongoDBOps } = require('mongodb-ops');
 const serverConfig = require('./server-config');
 
 // Add functions to String prototype

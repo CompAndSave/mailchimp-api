@@ -16,7 +16,7 @@
     "url": "https://github.com/CompAndSave/mailchimp-api/issues"
   },
   "dependencies": {
-    "aws-sdk": "^2.848.0",
+    "aws-sdk": "^2.873.0",
     "cas-common-lib": "^0.5.5",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
@@ -30,9 +30,9 @@
     "googleapis": "^65.0.0",
     "helmet": "^3.23.3",
     "http-errors": "^1.8.0",
-    "mailchimp-import": "^0.2.6",
+    "mailchimp-import": "^0.2.7",
     "moment-timezone": "^0.5.33",
-    "mongodb-ops": "^0.3.6",
+    "mongodb-ops": "^0.4.2",
     "morgan": "^1.10.0",
     "serverless-http": "^2.7.0",
     "winston": "^3.3.3"
