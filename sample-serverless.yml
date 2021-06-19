@@ -1,6 +1,10 @@
 service: mailchimp-api-serverless
 useDotenv: true
 
+package:
+  patterns:
+    - '!target/**'
+
 provider:
   name: aws
   runtime: nodejs12.x
